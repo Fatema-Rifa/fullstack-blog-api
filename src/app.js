@@ -29,7 +29,7 @@ app.use(
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
       ].filter(Boolean);
-      if (!origin || allowed.includes(origin)) {
+      if (!origin || allowed.includes(origin) || origin.endsWith(".vercel.app")) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
