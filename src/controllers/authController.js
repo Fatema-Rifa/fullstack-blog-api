@@ -280,7 +280,12 @@ exports.firebaseAuth = async (req, res, next) => {
     }
 
     const decoded = await verifyFirebaseToken(idToken);
-    const { uid, email, name: fbName, picture } = decoded;
+    const uid = decoded.uid || decoded.user_id || decoded.sub;
+    const { email, name: fbName, picture } = decoded;
+
+    if (!uid) {
+      return sendError(res, "Invalid Firebase token: missing user ID.", 400);
+    }
 
     if (!email) {
       return sendError(res, "Firebase account does not have an associated email.", 400);

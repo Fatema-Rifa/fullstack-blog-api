@@ -63,7 +63,7 @@ const postSchema = new mongoose.Schema(
 );
 
 // Auto-generate slug from title
-postSchema.pre("save", async function (next) {
+postSchema.pre("save", async function () {
   if (this.isModified("title") || !this.slug) {
     let base = slugify(this.title);
     let slug = base;
@@ -90,8 +90,6 @@ postSchema.pre("save", async function (next) {
   if (this.isModified("status") && this.status === "published" && !this.publishedAt) {
     this.publishedAt = new Date();
   }
-
-  next();
 });
 
 // Text index for search

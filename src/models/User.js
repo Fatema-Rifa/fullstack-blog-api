@@ -25,7 +25,13 @@ const userSchema = new mongoose.Schema(
       required: function () {
         return !this.firebaseUid;
       },
-      minlength: [6, "Password must be at least 6 characters"],
+      validate: {
+        validator: function (v) {
+          if (!v && this.firebaseUid) return true;
+          return typeof v === "string" && v.length >= 6;
+        },
+        message: "Password must be at least 6 characters",
+      },
       select: false, // Never return password by default
     },
     firebaseUid: {
@@ -60,11 +66,10 @@ const userSchema = new mongoose.Schema(
 );
 
 // Hash password before save
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password") || !this.password) return next();
+userSchema.pre("save", async function () {
+  if (!this.isModified("password") || !this.password) return;
   const salt = await bcrypt.genSalt(12);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
 // Instance method: compare password

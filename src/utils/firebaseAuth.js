@@ -80,7 +80,12 @@ const verifyFirebaseToken = async (idToken, projectId = process.env.FIREBASE_PRO
     issuer: expectedIssuer,
   });
 
-  return decoded;
+  const uid = decoded.uid || decoded.user_id || decoded.sub;
+
+  return {
+    ...decoded,
+    uid,
+  };
 };
 
 module.exports = {

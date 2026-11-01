@@ -45,9 +45,7 @@ const errorHandler = (err, req, res, next) => {
     message = "File too large. Maximum allowed size exceeded.";
   }
 
-  if (process.env.NODE_ENV === "development") {
-    console.error(`[ERROR] ${statusCode} - ${message}`, err.stack);
-  }
+  console.error(`[API ERROR] ${statusCode} - ${message}`, err.stack || err);
 
   return sendError(res, message, statusCode);
 };
