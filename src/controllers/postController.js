@@ -63,8 +63,10 @@ exports.getPosts = async (req, res, next) => {
 
     const query = {};
 
-    // Only admins/authors can see non-published posts
-    if (req.user?.role === "admin") {
+    // Only admins and the requested author can see non-published posts
+    const isRequestedAuthor =
+      req.user && author && req.user._id.toString() === author.toString();
+    if (req.user?.role === "admin" || isRequestedAuthor) {
       if (status !== "all") query.status = status;
     } else {
       query.status = "published";
