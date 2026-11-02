@@ -1,4 +1,5 @@
 const Post = require("../models/Post");
+const mongoose = require("mongoose");
 const Tag = require("../models/Tag");
 const Category = require("../models/Category");
 const Like = require("../models/Like");
@@ -116,7 +117,12 @@ exports.getPosts = async (req, res, next) => {
 // ─────────────────────────────────────────────────────────────────────────────
 exports.getPostBySlug = async (req, res, next) => {
   try {
-    const post = await Post.findOne({ slug: req.params.slug })
+    const identifier = req.params.slug;
+    const postQuery = mongoose.isValidObjectId(identifier)
+      ? { $or: [{ slug: identifier }, { _id: identifier }] }
+      : { slug: identifier };
+
+    const post = await Post.findOne(postQuery)
       .populate("author", "username name avatar bio followersCount")
       .populate("category", "name slug color")
       .populate("tags", "name slug");
