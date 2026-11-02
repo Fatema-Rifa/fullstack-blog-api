@@ -34,9 +34,9 @@ class UnsignedCloudinaryStorage {
           return cb(error);
         }
         cb(null, {
-          path: result.secure_url,
-          filename: result.public_id,
-          publicId: result.public_id,
+          path: result.secure_url || result.url,
+          filename: result.public_id || "",
+          publicId: result.public_id || "",
           size: result.bytes,
           format: result.format,
           width: result.width,
