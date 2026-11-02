@@ -1,15 +1,25 @@
 const app = require("../src/app");
 const connectDB = require("../src/config/db");
 
+const allowedOrigins = new Set([
+  process.env.CLIENT_URL,
+  "https://fullstack-blog-ui.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:3000",
+].filter(Boolean));
+
 // Serverless function handler for Vercel
 module.exports = async (req, res) => {
   // Always attach CORS headers early for Vercel serverless functions
   const origin = req.headers.origin;
-  if (origin) {
+  if (origin && allowedOrigins.has(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Credentials", "true");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+    res.setHeader("Vary", "Origin");
   }
 
   // Answer preflight immediately without touching the database
