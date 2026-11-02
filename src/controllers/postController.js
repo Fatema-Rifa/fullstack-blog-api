@@ -6,6 +6,25 @@ const { sendSuccess, sendError, sendPaginated } = require("../utils/apiResponse"
 const { deleteFromCloudinary } = require("../config/cloudinary");
 const { isOwnerOrAdmin } = require("../middleware/auth");
 
+const normalizeCoverImage = (value) => {
+  if (typeof value === "string") {
+    try {
+      return normalizeCoverImage(JSON.parse(value));
+    } catch {
+      return value.trim() ? { url: value.trim(), publicId: "" } : null;
+    }
+  }
+
+  if (!value || typeof value !== "object" || typeof value.url !== "string" || !value.url.trim()) {
+    return null;
+  }
+
+  return {
+    url: value.url.trim(),
+    publicId: typeof value.publicId === "string" ? value.publicId : "",
+  };
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper: resolve tags by name, create if not exists
 // ─────────────────────────────────────────────────────────────────────────────
@@ -143,20 +162,14 @@ exports.createPost = async (req, res, next) => {
     if (tagIds.length) postData.tags = tagIds;
 
     if (req.file) {
-      postData.coverImage = {
+      const coverImage = normalizeCoverImage({
         url: req.file.path,
         publicId: req.file.filename || req.file.publicId || "",
-      };
-    } else if (req.body.coverImage) {
-      try {
-        const cover = typeof req.body.coverImage === "string" ? JSON.parse(req.body.coverImage) : req.body.coverImage;
-        postData.coverImage = {
-          url: cover.url || cover,
-          publicId: cover.publicId || "",
-        };
-      } catch (_) {
-        postData.coverImage = { url: req.body.coverImage, publicId: "" };
-      }
+      });
+      if (coverImage) postData.coverImage = coverImage;
+    } else {
+      const coverImage = normalizeCoverImage(req.body.coverImage);
+      if (coverImage) postData.coverImage = coverImage;
     }
 
     const post = await Post.create(postData);
@@ -235,20 +248,14 @@ exports.updatePost = async (req, res, next) => {
       if (post.coverImage?.publicId) {
         await deleteFromCloudinary(post.coverImage.publicId);
       }
-      updates.coverImage = {
+      const coverImage = normalizeCoverImage({
         url: req.file.path,
         publicId: req.file.filename || req.file.publicId || "",
-      };
-    } else if (req.body.coverImage) {
-      try {
-        const cover = typeof req.body.coverImage === "string" ? JSON.parse(req.body.coverImage) : req.body.coverImage;
-        updates.coverImage = {
-          url: cover.url || cover,
-          publicId: cover.publicId || "",
-        };
-      } catch (_) {
-        updates.coverImage = { url: req.body.coverImage, publicId: "" };
-      }
+      });
+      if (coverImage) updates.coverImage = coverImage;
+    } else {
+      const coverImage = normalizeCoverImage(req.body.coverImage);
+      if (coverImage) updates.coverImage = coverImage;
     }
 
     const updated = await Post.findByIdAndUpdate(req.params.id, updates, {
