@@ -152,7 +152,7 @@ exports.getPostBySlug = async (req, res, next) => {
 // ─────────────────────────────────────────────────────────────────────────────
 exports.createPost = async (req, res, next) => {
   try {
-    const { title, content, excerpt, category, tags, status } = req.body;
+    const { title, content, excerpt, category, tags, status, coverImage } = req.body;
 
     const tagIds = await resolveTagIds(
       Array.isArray(tags) ? tags : tags ? [tags] : []
@@ -176,8 +176,8 @@ exports.createPost = async (req, res, next) => {
       });
       if (coverImage) postData.coverImage = coverImage;
     } else {
-      const coverImage = normalizeCoverImage(req.body.coverImage);
-      if (coverImage) postData.coverImage = coverImage;
+      const normalizedCoverImage = normalizeCoverImage(coverImage);
+      if (normalizedCoverImage) postData.coverImage = normalizedCoverImage;
     }
 
     const post = await Post.create(postData);
@@ -214,7 +214,7 @@ exports.updatePost = async (req, res, next) => {
       return sendError(res, "Not authorized to update this post.", 403);
     }
 
-    const { title, content, excerpt, category, tags, status, isFeatured } = req.body;
+    const { title, content, excerpt, category, tags, status, isFeatured, coverImage } = req.body;
     const updates = {};
 
     if (title !== undefined) updates.title = title;
@@ -262,8 +262,8 @@ exports.updatePost = async (req, res, next) => {
       });
       if (coverImage) updates.coverImage = coverImage;
     } else {
-      const coverImage = normalizeCoverImage(req.body.coverImage);
-      if (coverImage) updates.coverImage = coverImage;
+      const normalizedCoverImage = normalizeCoverImage(coverImage);
+      if (normalizedCoverImage) updates.coverImage = normalizedCoverImage;
     }
 
     const updated = await Post.findByIdAndUpdate(req.params.id, updates, {
